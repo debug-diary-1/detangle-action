@@ -1,4 +1,4 @@
-name: detangle
+name: detangle check
 description: Check import cycles and architecture rules in JavaScript and TypeScript, with annotations on the pull request.
 author: debug-diary-1
 branding:
