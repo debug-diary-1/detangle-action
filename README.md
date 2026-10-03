@@ -1,6 +1,6 @@
 # detangle for GitHub Actions
 
-Checks import cycles and architecture rules in JavaScript and TypeScript projects with [detangle](https://github.com/debug-diary-1/detangle), and puts each violation on the pull request as an annotation on the file that has it. A Markdown report goes to the job summary.
+Checks import cycles and architecture rules in JavaScript and TypeScript projects with [detangle](https://github.com/debug-diary-1/detangle), and puts each violation on the pull request as an annotation on the line of the import that causes it. A Markdown report goes to the job summary.
 
 detangle checks VS Code's source (10,000 modules, 113,000 imports) in about 0.2 s, so the step adds next to nothing to a CI run. The action downloads a release binary and verifies its checksum; it doesn't need Node.js.
 

@@ -21,19 +21,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: A clean project passes
-        id: clean
-        uses: ./
-        with:
-          path: test/clean
-
-      - name: A broken project fails
+      - name: A broken project fails (pinned version)
         id: broken
         continue-on-error: true
         uses: ./
         with:
           path: test/broken
           version: "0.2.2"
+
+      - name: A clean project passes (latest, installed last so it's on PATH)
+        id: clean
+        uses: ./
+        with:
+          path: test/clean
 
       - name: Check the results
         shell: bash
@@ -45,11 +45,11 @@ jobs:
           [ "${{ steps.broken.outputs.version }}" = 0.2.2 ] || { echo "pinned version: ${{ steps.broken.outputs.version }}"; exit 1; }
           detangle --version
 
-      - name: Annotations point at files relative to the repository
+      - name: Annotations point at the import, relative to the repository
         shell: bash
         run: |
           set -eu
           for p in test/broken test/broken/src; do
             out=$(DETANGLE_PATH=$p bash run.sh 2>/dev/null || true)
-            echo "$out" | grep -q '^::error file=test/broken/src/index\.ts,' || { echo "path=$p: $out"; exit 1; }
+            echo "$out" | grep -q '^::error file=test/broken/src/index\.ts,line=1,' || { echo "path=$p: $out"; exit 1; }
           done
