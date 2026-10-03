@@ -1,0 +1,40 @@
+name: detangle
+description: Check import cycles and architecture rules in JavaScript and TypeScript, with annotations on the pull request.
+author: debug-diary-1
+branding:
+  icon: git-pull-request
+  color: blue
+
+inputs:
+  path:
+    description: The project to check (where its detangle.toml or package.json is).
+    default: "."
+  version:
+    description: The detangle version to install, such as 0.2.2, or latest.
+    default: latest
+  args:
+    description: More arguments for `detangle check`, such as `--strict` or `--baseline .detangle-baseline.json`.
+    default: ""
+  summary:
+    description: Write a Markdown report to the job summary.
+    default: "true"
+
+outputs:
+  version:
+    description: The detangle version that was installed.
+    value: ${{ steps.install.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        DETANGLE_VERSION: ${{ inputs.version }}
+      run: bash "$GITHUB_ACTION_PATH/install.sh"
+    - shell: bash
+      env:
+        DETANGLE_PATH: ${{ inputs.path }}
+        DETANGLE_ARGS: ${{ inputs.args }}
+        DETANGLE_SUMMARY: ${{ inputs.summary }}
+      run: bash "$GITHUB_ACTION_PATH/run.sh"

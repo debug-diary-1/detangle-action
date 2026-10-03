@@ -1,0 +1,46 @@
+name: test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  action:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux x64, os: ubuntu-latest }
+          - { name: Linux arm64, os: ubuntu-22.04-arm }
+          - { name: macOS arm64, os: macos-14 }
+          - { name: Windows x64, os: windows-latest }
+          - { name: Windows arm64, os: windows-11-arm }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: A clean project passes
+        id: clean
+        uses: ./
+        with:
+          path: test/clean
+
+      - name: A broken project fails
+        id: broken
+        continue-on-error: true
+        uses: ./
+        with:
+          path: test/broken
+          version: "0.2.2"
+
+      - name: Check the results
+        shell: bash
+        run: |
+          set -eu
+          [ "${{ steps.clean.outcome }}" = success ] || { echo "clean: ${{ steps.clean.outcome }}"; exit 1; }
+          [ "${{ steps.broken.outcome }}" = failure ] || { echo "broken: ${{ steps.broken.outcome }}"; exit 1; }
+          [ -n "${{ steps.clean.outputs.version }}" ] || { echo "no version output"; exit 1; }
+          [ "${{ steps.broken.outputs.version }}" = 0.2.2 ] || { echo "pinned version: ${{ steps.broken.outputs.version }}"; exit 1; }
+          detangle --version
