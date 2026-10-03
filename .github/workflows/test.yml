@@ -44,3 +44,12 @@ jobs:
           [ -n "${{ steps.clean.outputs.version }}" ] || { echo "no version output"; exit 1; }
           [ "${{ steps.broken.outputs.version }}" = 0.2.2 ] || { echo "pinned version: ${{ steps.broken.outputs.version }}"; exit 1; }
           detangle --version
+
+      - name: Annotations point at files relative to the repository
+        shell: bash
+        run: |
+          set -eu
+          for p in test/broken test/broken/src; do
+            out=$(DETANGLE_PATH=$p bash run.sh 2>/dev/null || true)
+            echo "$out" | grep -q '^::error file=test/broken/src/index\.ts,' || { echo "path=$p: $out"; exit 1; }
+          done

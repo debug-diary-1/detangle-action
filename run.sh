@@ -9,12 +9,26 @@ set -uo pipefail
 read -ra args <<<"${DETANGLE_ARGS:-}"
 path=${DETANGLE_PATH:-.}
 
-# detangle reports files relative to the project; GitHub wants them relative
-# to the repository, so annotations for a project in a subdirectory get its
-# path in front.
-root=$(cd "${GITHUB_WORKSPACE:-.}" && pwd -P)
-project=$(cd "$path" && pwd -P) || exit 2
-prefix=${project#"$root"}
+# detangle reports files relative to the project root: the nearest ancestor
+# of `path` with a detangle.toml, else one with a package.json, else `path`
+# (as detangle's find_root). GitHub wants them relative to the repository, so
+# annotations get the project root's path in front.
+find_root() {
+  local start=$1 marker dir
+  for marker in detangle.toml package.json; do
+    dir=$start
+    while :; do
+      [ -f "$dir/$marker" ] && { echo "$dir"; return; }
+      [ "$dir" = / ] && break
+      dir=$(dirname "$dir")
+    done
+  done
+  echo "$start"
+}
+workspace=$(cd "${GITHUB_WORKSPACE:-.}" && pwd -P)
+start=$(cd "$path" && pwd -P) || exit 2
+project=$(find_root "$start")
+prefix=${project#"$workspace"}
 prefix=${prefix#/}
 [ -n "$prefix" ] && prefix=$prefix/
 
