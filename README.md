@@ -2,7 +2,7 @@
 
 Checks import cycles and architecture rules in JavaScript and TypeScript projects with [detangle](https://github.com/debug-diary-1/detangle), and puts each violation on the pull request as an annotation on the line of the import that causes it. A Markdown report goes to the job summary.
 
-detangle checks VS Code's source (10,000 modules, 113,000 imports) in about 0.2 s, so the step adds next to nothing to a CI run. The action downloads a release binary and verifies its checksum; it doesn't need Node.js.
+detangle checks VS Code's source (10,000 modules, 113,000 imports) in about 0.2 s, so the step adds next to nothing to a CI run. The action downloads a release binary and verifies its checksum; it doesn't need Node.js itself.
 
 ```yaml
 on: pull_request
@@ -12,8 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: npm ci   # or pnpm install / yarn install
       - uses: debug-diary-1/detangle-action@v1
 ```
+
+Install your dependencies before the check: detangle resolves imports of npm packages through `node_modules`, so on a checkout without them every such import is reported as unresolvable (since detangle 0.2.5 it also says so in a warning).
 
 With no `detangle.toml`, detangle checks its default rules: import cycles, imports that don't resolve, npm packages imported without being declared, and orphaned files. Your own rules (which folders may import which, per-package boundaries, Nx tags) go in `detangle.toml`; see the [reference](https://github.com/debug-diary-1/detangle/blob/main/docs/reference.md). To convert an existing setup (JavaScript rules configs, ESLint import rules, Nx module boundaries, madge), run `npx detangle migrate` once.
 
