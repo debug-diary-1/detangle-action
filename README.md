@@ -18,7 +18,7 @@ jobs:
 
 Install your dependencies before the check: detangle resolves imports of npm packages through `node_modules`, so on a checkout without them every such import is reported as unresolvable (since detangle 0.2.5 it also says so in a warning).
 
-With no `detangle.toml`, detangle checks its default rules: import cycles, imports that don't resolve, npm packages imported without being declared, and orphaned files. Your own rules (which folders may import which, per-package boundaries, Nx tags) go in `detangle.toml`; see the [reference](https://github.com/debug-diary-1/detangle/blob/main/docs/reference.md). To convert an existing setup (JavaScript rules configs, ESLint import rules, Nx module boundaries, madge), run `npx detangle migrate` once.
+With no `detangle.toml`, detangle checks its default rules: import cycles, imports that don't resolve, npm packages imported without being declared, devDependencies imported by production code, production code importing test files, and orphaned files. Your own rules (which folders may import which, per-package boundaries, Nx tags) go in `detangle.toml`; see the [reference](https://github.com/debug-diary-1/detangle/blob/main/docs/reference.md). To convert an existing setup (JavaScript rules configs, ESLint import rules, Nx module boundaries, madge), run `npx detangle migrate` once.
 
 The step fails when detangle finds errors (or warnings too, with `--strict`).
 
